@@ -5,6 +5,8 @@ import {
 import { ImageService } from '../services/image.service'
 import { Subscription } from 'rxjs/internal/Subscription'
 import { HttpClient } from '@angular/common/http'
+import { Observable } from 'rxjs'
+import { PhotoboothCloudMediaExtended, PhotoboothCloudMedia } from '../gallery-media';
 
 @Component({
     selector: 'gallery',
@@ -22,12 +24,23 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     rowIndex: number = 0
     rightArrowInactive: boolean = false
     leftArrowInactive: boolean = false
+    providedDataSubscription: any;
+
+    // PhotoboothCloud App region
+    mediaAddedSubscription: Subscription;
+    // end region
 
     @Input('flexBorderSize') providedImageMargin: number = 3
     @Input('flexImageSize') providedImageSize: number = 7
     @Input('galleryName') providedGalleryName: string = ''
     @Input('metadataUri') providedMetadataUri: string = undefined
     @Input('maxRowsPerPage') rowsPerPage: number = 200
+
+    // PhotobooothCloud App region
+    @Input('data') providedData: Observable<Array<any>> = undefined
+    @Input('innerGalleryShowed') innerGalleryShowed: boolean
+    @Input('mediaAdded$') mediaAdded$: Observable<PhotoboothCloudMedia> = new Observable<PhotoboothCloudMedia>()
+    // end region
 
     @Output() viewerChange = new EventEmitter<boolean>()
 
@@ -49,11 +62,13 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         this.fetchDataAndRender()
         this.viewerSubscription = this.imageService.showImageViewerChanged$
             .subscribe((visibility: boolean) => this.viewerChange.emit(visibility))
+
+        this.mediaAddedSubscription = this.mediaAdded$.subscribe((newMedia: PhotoboothCloudMedia)  => this.AddMedia(newMedia))
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         // input params changed
-        if (changes['providedGalleryName'] != undefined) {
+        if (changes['providedGalleryName'] !== undefined) {
             this.fetchDataAndRender()
         } else {
             this.render()
@@ -63,6 +78,12 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     ngOnDestroy(): void {
         if (this.viewerSubscription) {
             this.viewerSubscription.unsubscribe()
+        }
+        if (this.providedDataSubscription) {
+            this.providedDataSubscription.unsubscribe()
+        }
+        if (this.mediaAddedSubscription) {
+            this.mediaAddedSubscription.unsubscribe()
         }
     }
 
@@ -92,37 +113,60 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     private fetchDataAndRender(): void {
         this.imageDataCompletePath = this.providedMetadataUri
 
-        if (!this.providedMetadataUri) {
-            this.imageDataCompletePath = this.providedGalleryName !== '' ?
-                `${this.imageDataStaticPath + this.providedGalleryName}/${this.dataFileName}` :
-                this.imageDataStaticPath + this.dataFileName
+        // Photoboothcloud app extension
+        if (this.providedData) {
+            this.providedDataSubscription = this.providedData.subscribe(media => {
+                const extendedData: Array<PhotoboothCloudMediaExtended> = media
+                console.log('Proslijeden data 8', extendedData)
+
+                this.images = extendedData
+                this.imageService.updateImages(this.images)
+
+                this.images.forEach(image => {
+                    image['galleryImageLoaded'] = false
+                    image['viewerImageLoaded'] = false
+                    image['srcAfterFocus'] = image[this.minimalQualityCategory]['path']
+                })
+                // twice, single leads to different strange browser behaviour
+                this.render()
+                this.render()
+            })
+
+        } else {
+
+            // Primary galley implementation
+            if (!this.providedMetadataUri) {
+                this.imageDataCompletePath = this.providedGalleryName !== '' ?
+                    `${this.imageDataStaticPath + this.providedGalleryName}/${this.dataFileName}` :
+                    this.imageDataStaticPath + this.dataFileName
+            }
+    
+            this.http.get(this.imageDataCompletePath)
+              .subscribe(
+                (data: Array<any>) => {
+                        this.images = data
+                        this.imageService.updateImages(this.images)
+    
+                        this.images.forEach(image => {
+                          image['galleryImageLoaded'] = false
+                          image['viewerImageLoaded'] = false
+                          image['srcAfterFocus'] = ''
+                        })
+                        // twice, single leads to different strange browser behaviour
+                        this.render()
+                        this.render()
+                    },
+                  err => {
+                        if (this.providedMetadataUri) {
+                          console.error(`Provided endpoint '${this.providedMetadataUri}' did not serve metadata correctly or in the expected format.
+          See here for more information: https://github.com/BenjaminBrandmeier/angular2-image-gallery/blob/master/docs/externalDataSource.md,
+          Original error: ${err}`)
+                        } else {
+                            console.error(`Did you run the convert script from angular2-image-gallery for your images first? Original error: ${err}`)
+                        }
+                  },
+                () => undefined)
         }
-
-        this.http.get(this.imageDataCompletePath)
-          .subscribe(
-            (data: Array<any>) => {
-                    this.images = data
-                    this.imageService.updateImages(this.images)
-
-                    this.images.forEach(image => {
-                      image['galleryImageLoaded'] = false
-                      image['viewerImageLoaded'] = false
-                      image['srcAfterFocus'] = ''
-                    })
-                    // twice, single leads to different strange browser behaviour
-                    this.render()
-                    this.render()
-                },
-              err => {
-                    if (this.providedMetadataUri) {
-                      console.error(`Provided endpoint '${this.providedMetadataUri}' did not serve metadata correctly or in the expected format.
-      See here for more information: https://github.com/BenjaminBrandmeier/angular2-image-gallery/blob/master/docs/externalDataSource.md,
-      Original error: ${err}`)
-                    } else {
-                        console.error(`Did you run the convert script from angular2-image-gallery for your images first? Original error: ${err}`)
-                    }
-              },
-            () => undefined)
     }
 
     private render(): void {
@@ -145,6 +189,21 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         this.scaleGallery()
+    }
+
+
+    public AddMedia(newMedia: PhotoboothCloudMedia) {
+        const newExtMedia: PhotoboothCloudMediaExtended = newMedia as PhotoboothCloudMediaExtended
+
+        newExtMedia['galleryImageLoaded'] = false
+        newExtMedia['viewerImageLoaded'] = false
+        newExtMedia['srcAfterFocus'] = ''
+
+        this.images.push(newExtMedia)
+        this.imageService.updateImages(this.images)
+
+        this.render()
+
     }
 
     private shouldAddCandidate(imgRow: Array<any>, candidate: any): boolean {
@@ -222,16 +281,20 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private checkForAsyncLoading(image: any, imageCounter: number): void {
-        const imageElements = this.imageElements.toArray()
 
-        if (image['galleryImageLoaded'] ||
-            (imageElements.length > 0 &&
-              imageElements[imageCounter] &&
-              this.isScrolledIntoView(imageElements[imageCounter].nativeElement))) {
-            image['galleryImageLoaded'] = true
-            image['srcAfterFocus'] = image[this.minimalQualityCategory]['path']
-        } else {
-            image['srcAfterFocus'] = ''
+        if (this.imageElements) {
+            const imageElements = this.imageElements.toArray()
+            if (image['galleryImageLoaded'] ||
+                (imageElements.length > 0 &&
+                imageElements[imageCounter] &&
+                this.isScrolledIntoView(imageElements[imageCounter].nativeElement))
+                || (image[this.minimalQualityCategory]['path'] !== '')) {
+                
+                image['galleryImageLoaded'] = true
+                image['srcAfterFocus'] = image[this.minimalQualityCategory]['path']
+            } else {
+                image['srcAfterFocus'] = ''
+            }
         }
     }
 

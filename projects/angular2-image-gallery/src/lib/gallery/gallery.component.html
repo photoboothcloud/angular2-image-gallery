@@ -1,4 +1,6 @@
-<div #galleryContainer class="galleryContainer">
+<div #galleryContainer class="galleryContainer"
+     [ngClass]="innerGalleryShowed? 'innerGalleryVisible': 'innerGalleryNotVisible'">
+     
     <div class="innerGalleryContainer">
         <div *ngFor='let imgrow of gallery | slice:rowIndex:rowIndex+rowsPerPage; let i = index'
              class="imagerow"
@@ -10,7 +12,7 @@
                  [style.height.px]="img['height']"
                  (click)="openImageViewer(img)"
                  [src]="img['srcAfterFocus']"
-                 [style.background]="img.dominantColor"
+                 [style.background]="img.dominant_color"
                  [style.margin-right.px]="calcImageMargin()"/>
         </div>
     </div>

@@ -76,3 +76,13 @@
     float: right;
 }
 
+.innerGalleryVisible {
+    visibility: visible;
+}
+
+.innerGalleryNotVisible {
+    visibility: hidden;
+    height: 0px;
+    padding: 0px;
+    margin: 0px;
+}

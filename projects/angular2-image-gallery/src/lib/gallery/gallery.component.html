@@ -27,4 +27,6 @@
     </div>
 </div>
 
-<viewer></viewer>
+<viewer class="viewer-style"
+        [commentViewerOpenedPropagate]="commentViewerOpenedPropagateSubject"
+        (commentViewerFirstEmmiter)="commentViewerBridge($event)"></viewer>

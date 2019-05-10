@@ -86,3 +86,9 @@
     padding: 0px;
     margin: 0px;
 }
+
+.viewer-style {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+}

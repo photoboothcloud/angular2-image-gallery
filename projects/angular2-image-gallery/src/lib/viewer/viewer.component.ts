@@ -1,6 +1,10 @@
 import { ImageService } from '../services/image.service'
-import { Component } from '@angular/core'
+import { Component, Output, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core'
 import { animate, state, style, transition, trigger } from '@angular/animations'
+import { EventEmitter } from '@angular/core';
+import { Subject } from 'rxjs';
+
+
 
 @Component({
     selector: 'viewer',
@@ -77,7 +81,8 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
     ]
 })
 
-export class ViewerComponent {
+export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
+
     showViewer: boolean
     images: Array<any> = [{}]
     currentIdx: number = 0
@@ -86,9 +91,19 @@ export class ViewerComponent {
     categorySelected: string = 'preview_xxs'
     transform: number
     math: Math
+
+    /** PhotoboothCloud app region */
+    commentViewerWeakIsVisible: boolean = false // Weak variable, not trusted can have wrong meaning. Used only for toggle
+    commentViewerSubscription: any
+    commentViewerOpened: boolean = false        // Trusted variable true if comment viewer is opened, false if comment viewer is hidden.
+
+    @Input('commentViewerOpenedPropagate') providedCommentViewerOpenedPropagate: Subject<boolean> = new Subject<boolean>()
+    @Output() commentViewerFirstEmmiter: EventEmitter<boolean> = new EventEmitter<boolean>()
+    /** end region */
+
     private qualitySelectorShown: boolean = false
     private qualitySelected: string = 'auto'
-
+    
     constructor(private imageService: ImageService) {
         imageService.imagesUpdated$.subscribe(
             images => {
@@ -107,6 +122,28 @@ export class ViewerComponent {
                 this.showViewer = showViewer
             })
         this.math = Math
+    }
+
+    ngOnInit(): void {
+        this.commentViewerSubscription = this.providedCommentViewerOpenedPropagate.subscribe((openClose) => this.commentViewerChanged(openClose))
+    }
+
+    ngOnDestroy(): void {
+        if (this.commentViewerSubscription) {
+            this.commentViewerSubscription.unsubscribe()
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+    }
+
+    /** If comment viewer is opened disable navigating pages */
+    private commentViewerChanged(openClose: boolean): void {
+        if (openClose) {
+            this.commentViewerOpened = true
+        } else {
+            this.commentViewerOpened = false
+        }
     }
 
     get leftArrowActive(): boolean {
@@ -147,24 +184,28 @@ export class ViewerComponent {
      * swipe (user swiped)
      */
     navigate(direction: number, swipe: any): void {
-        if ((direction === 1 && this.currentIdx < this.images.length - 1) ||
+
+        // Only navigate if comments are not shown.
+        if (!this.commentViewerOpened) {
+            if ((direction === 1 && this.currentIdx < this.images.length - 1) ||
             (direction === -1 && this.currentIdx > 0)) {
 
-            if (direction == -1) {
-                this.images[this.currentIdx]['transition'] = 'leaveToRight'
-                this.images[this.currentIdx - 1]['transition'] = 'enterFromLeft'
-            } else {
-                this.images[this.currentIdx]['transition'] = 'leaveToLeft'
-                this.images[this.currentIdx + 1]['transition'] = 'enterFromRight'
-            }
-            this.currentIdx += direction
+                if (direction == -1) {
+                    this.images[this.currentIdx]['transition'] = 'leaveToRight'
+                    this.images[this.currentIdx - 1]['transition'] = 'enterFromLeft'
+                } else {
+                    this.images[this.currentIdx]['transition'] = 'leaveToLeft'
+                    this.images[this.currentIdx + 1]['transition'] = 'enterFromRight'
+                }
+                this.currentIdx += direction
 
-            if (swipe) {
-                this.hideNavigationArrows()
-            } else {
-                this.showNavigationArrows()
+                if (swipe) {
+                    this.hideNavigationArrows()
+                } else {
+                    this.showNavigationArrows()
+                }
+                this.updateImage()
             }
-            this.updateImage()
         }
     }
 
@@ -180,41 +221,46 @@ export class ViewerComponent {
     }
 
     onKeydown(event: KeyboardEvent): void {
-        const prevent = [37, 39, 27, 36, 35]
-            .find(no => no === event.keyCode)
-        if (prevent) {
-            event.preventDefault()
-        }
 
-        switch (prevent) {
-            case 37:
-                // navigate left
-                this.navigate(-1, false)
-                break
-            case 39:
-                // navigate right
-                this.navigate(1, false)
-                break
-            case 27:
-                // esc
-                this.closeViewer()
-                break
-            case 36:
-                // pos 1
-                this.images[this.currentIdx]['transition'] = 'leaveToRight'
-                this.currentIdx = 0
-                this.images[this.currentIdx]['transition'] = 'enterFromLeft'
-                this.updateImage()
-                break
-            case 35:
-                // end
-                this.images[this.currentIdx]['transition'] = 'leaveToLeft'
-                this.currentIdx = this.images.length - 1
-                this.images[this.currentIdx]['transition'] = 'enterFromRight'
-                this.updateImage()
-                break
-            default:
-                break
+        // Only navigate if comments are not shown.
+        if (!this.commentViewerOpened) {
+            
+            const prevent = [37, 39, 27, 36, 35]
+            .find(no => no === event.keyCode)
+            if (prevent) {
+                event.preventDefault()
+            }
+
+            switch (prevent) {
+                case 37:
+                    // navigate left
+                    this.navigate(-1, false)
+                    break
+                case 39:
+                    // navigate right
+                    this.navigate(1, false)
+                    break
+                case 27:
+                    // esc
+                    this.closeViewer()
+                    break
+                case 36:
+                    // pos 1
+                    this.images[this.currentIdx]['transition'] = 'leaveToRight'
+                    this.currentIdx = 0
+                    this.images[this.currentIdx]['transition'] = 'enterFromLeft'
+                    this.updateImage()
+                    break
+                case 35:
+                    // end
+                    this.images[this.currentIdx]['transition'] = 'leaveToLeft'
+                    this.currentIdx = this.images.length - 1
+                    this.images[this.currentIdx]['transition'] = 'enterFromRight'
+                    this.updateImage()
+                    break
+                default:
+                    break
+            }
         }
     }
 
@@ -229,7 +275,7 @@ export class ViewerComponent {
             this.updateQuality()
             this.images[this.currentIdx]['active'] = true
             this.images.forEach(image => {
-                if (image != this.images[this.currentIdx]) {
+                if (image !== this.images[this.currentIdx]) {
                     image['active'] = false
                     this.transform = 0
                 }
@@ -243,8 +289,11 @@ export class ViewerComponent {
 
         switch (this.qualitySelected) {
             case 'auto': {
-                this.categorySelected = 'preview_xxs'
 
+                if (screenWidth <= this.images[this.currentIdx]['preview_xxs'].width ||
+                     screenHeight <= this.images[this.currentIdx]['preview_xxs'].height) {
+                        this.categorySelected = 'preview_xxs'
+                }
                 if (screenWidth > this.images[this.currentIdx]['preview_xxs'].width &&
                     screenHeight > this.images[this.currentIdx]['preview_xxs'].height) {
                     this.categorySelected = 'preview_xs'
@@ -287,5 +336,12 @@ export class ViewerComponent {
               this.categorySelected = 'preview_m'
             }
         }
+    }
+
+    public commentViewer() {
+
+        // Toggle comment viewer visibility
+        this.commentViewerWeakIsVisible = !this.commentViewerWeakIsVisible;
+        this.commentViewerFirstEmmiter.emit(this.commentViewerWeakIsVisible)
     }
 }

@@ -105,7 +105,12 @@
     height: 26px;
 }
 
-
+.commentButtonContainer {
+    height: 26px;
+    width: 26px;
+    right: unset;
+    left: 20px;
+}
 
 md-button-toggle.checked {
     background-color: #a0a0a0;

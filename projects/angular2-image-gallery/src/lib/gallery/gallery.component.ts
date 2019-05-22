@@ -132,7 +132,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         if (this.providedData) {
             this.providedDataSubscription = this.providedData.subscribe(media => {
                 const extendedData: Array<PhotoboothCloudMediaExtended> = media
-                // console.log('Proslijeden data 13', extendedData)
+                // console.log('Proslijeden data 16', extendedData)
 
                 this.images = extendedData
                 this.imageService.updateImages(this.images)
@@ -238,7 +238,6 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
 
         const ratio = (this.getGalleryWidth() - (imgRow.length - 1) * this.calcImageMargin()) / originalRowWidth
         const rowHeight = imgRow[0][this.minimalQualityCategory]['height'] * ratio
-
         return rowHeight
     }
 
@@ -275,13 +274,14 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
             const originalRowWidth = this.calcOriginalRowWidth(imgRow)
 
             if (imgRow !== this.gallery[this.gallery.length - 1]) {
-                const ratio = (this.getGalleryWidth() - (imgRow.length - 1) * this.calcImageMargin()) / originalRowWidth
-                
-                imgRow.forEach((img: any) => {
-                    img['width'] = img[this.minimalQualityCategory]['width'] * ratio
-                    img['height'] = img[this.minimalQualityCategory]['height'] * ratio
-                    maximumGalleryImageHeight = Math.max(maximumGalleryImageHeight, img['height'])
-                    this.checkForAsyncLoading(img, imageCounter++)
+                setTimeout(() => {
+                    const ratio = (this.getGalleryWidth() - (imgRow.length - 1) * this.calcImageMargin()) / originalRowWidth
+                    imgRow.forEach((img: any) => {
+                        img['width'] = img[this.minimalQualityCategory]['width'] * ratio
+                        img['height'] = img[this.minimalQualityCategory]['height'] * ratio
+                        maximumGalleryImageHeight = Math.max(maximumGalleryImageHeight, img['height'])
+                        this.checkForAsyncLoading(img, imageCounter++)
+                    })
                 })
             } else {
                 imgRow.forEach((img: any) => {

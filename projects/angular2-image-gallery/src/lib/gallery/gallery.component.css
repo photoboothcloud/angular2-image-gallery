@@ -10,12 +10,15 @@
     overflow: hidden;
 }
 
-.innerGalleryContainer img:last-child {
-    /* important to overwrite inline css and prevent chrome flickering bug */
-    margin-right: -1px !important;
-}
 
 .galleryContainer img:hover {
+    -webkit-filter: brightness(50%);
+    filter: brightness(50%);
+    transition: all ease-out 0.2s;
+    cursor: pointer;
+}
+
+.galleryContainer .greeting-card-style:hover {
     -webkit-filter: brightness(50%);
     filter: brightness(50%);
     transition: all ease-out 0.2s;
@@ -91,4 +94,98 @@
     position: fixed;
     width: 100vw;
     height: 100vh;
+}
+
+/** Photobooth cloud app region*/
+.buttonContainer {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    height: 20px;
+    text-align: center;
+    opacity: 1.0;
+    z-index: 200;
+    transition: all ease-out 0.5s;
+    border-radius: 5px;
+}
+
+.buttonContainer .action {
+    height: 100%;
+    cursor: pointer;
+    vertical-align: top;
+}
+
+.buttonContainer .action:focus {
+    outline: 0;
+}
+
+.buttonContainer .action:hover {
+    background-color: #e0e0e0;
+    transition: all ease-out 0.3s;
+}
+
+.buttonContainer .action.close {
+    width: 26px;
+    height: 26px;
+}
+
+.deleteButtonContainer {
+    height: 26px;
+    width: 26px;
+    right: 5px;
+    top: 5px;
+    left: unset;
+    display: inline-block;
+    position: absolute;
+}
+
+.element-container-style {
+    position: relative;
+}
+
+.isVisible {
+    visibility: visible;
+}
+
+.notVisible {
+    visibility: hidden;
+}
+
+.greeting-card-style {
+    border-style: dotted;
+    border-width: 4px;
+    border-color: #F44336; 
+}
+
+.greeting-card-author {
+    color: whitesmoke;
+    margin: 25px;
+    font-family: 'Roboto';
+    font-weight: bolder;
+    font-size: 20px;
+    width: 180px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.greeting-card-text {
+    color: whitesmoke;
+    margin: 25px;
+    font-family: 'Roboto';
+    font-weight: normal;
+    width: 180px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.box {
+    display: flex;
+}
+
+.heart-icon-style {
+    margin-left: auto;
+    justify-self: flex-end;
+    color: #F44336;
 }

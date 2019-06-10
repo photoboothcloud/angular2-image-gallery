@@ -3,7 +3,7 @@
      
     <div class="innerGalleryContainer">
         <div *ngFor='let imgrow of gallery | slice:rowIndex:rowIndex+rowsPerPage; let i = index'
-             class="imagerow"
+             class="imagerow" 
              [style.margin-bottom.px]="calcImageMargin()">
             <div *ngFor='let img of imgrow; let j = index' class="element-container-style">
                     
@@ -18,18 +18,36 @@
                         [style.margin-right.px]="calcImageMargin()"/>
 
                     <div *ngIf="img.type === 'GREETING_CARD'"
-                         class="greeting-card-style"
+                         class="greeting-card-style thumbnail"
                          [style.width.px]="img.width"
                          [style.height.px]="img.height"
                          [style.background]="img.dominant_color"
-                         [style.margin-right.px]="calcImageMargin()">
-                        <p class="greeting-card-author" [innerText]="img.author"></p>
+                         [style.margin-right.px]="calcImageMargin()"
+                         (click)="openSelectedMedia(img)"> 
+                        <p class="greeting-card-author" [innerText]="img.author"></p> 
                         <p class="greeting-card-text" [innerText]="img.text"></p>
-                        <div class="box">
-                            <i class="material-icons heart-icon-style">favorite</i>
-                        </div>
+
+                        <i class="material-icons heart-icon-style">favorite</i>
                     </div>
 
+                    <div *ngIf="img.type === 'LIVE_STREAM'"
+                         class="live-stream-card-style thumbnail"
+                         [style.width.px]="img.width"
+                         [style.height.px]="img.height"
+                         [style.background]="img.dominant_color"
+                         [style.margin-right.px]="calcImageMargin()"
+                         (click)="openSelectedMedia(img)">
+                        <p class="streamer-name-style" [innerText]="img.senderID"></p>
+                        <div class="streaming-message-div-style">
+                            <p class="streaming-message-style">is streaming right now.</p>
+                            <div class="spinner-grow recording-style" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="live-tv-icon-div-style">
+                            <i class="material-icons live-tv-icon-style">live_tv</i>
+                        </div>
+                    </div>
                     <!-- Photobooth cloud app section delete element.-->
                     <div *ngIf="providedShowEditState"
                          class="buttonContainer deleteButtonContainer">

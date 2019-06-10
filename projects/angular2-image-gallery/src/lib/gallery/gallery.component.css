@@ -18,11 +18,18 @@
     cursor: pointer;
 }
 
-.galleryContainer .greeting-card-style:hover {
+.galleryContainer .greeting-card-style:hover  {
     -webkit-filter: brightness(50%);
     filter: brightness(50%);
     transition: all ease-out 0.2s;
     cursor: pointer;
+}
+
+.galleryContainer .live-stream-card-style:hover {
+    -webkit-filter: brightness(50%);
+    filter: brightness(50%);
+    transition: all ease-out 0.2s;
+    cursor: pointer; 
 }
 
 .imagerow {
@@ -151,41 +158,117 @@
     visibility: hidden;
 }
 
+
+/** GREETING CARD section */
 .greeting-card-style {
     border-style: dotted;
-    border-width: 4px;
-    border-color: #F44336; 
+    border-width: 2px;
+    border-color: #F44336;
+    display: flex;
+    flex-direction: column;
 }
 
 .greeting-card-author {
     color: whitesmoke;
-    margin: 25px;
+    margin: 15px;
     font-family: 'Roboto';
     font-weight: bolder;
     font-size: 20px;
-    width: 180px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    width: 85%;
+    min-height: 30px;
 }
 
 .greeting-card-text {
     color: whitesmoke;
-    margin: 25px;
+    margin: 15px;
+    margin-top: 0px;
+    margin-bottom: 0px;
     font-family: 'Roboto';
     font-weight: normal;
-    width: 180px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    width: 85%;
+    min-height: 25px;
 }
 
-.box {
-    display: flex;
-}
 
 .heart-icon-style {
+    color: #F44336;                      /* primary red color */
+    align-self: flex-end;
+    margin-top: auto;
+    margin-right: 15px;
+    margin-bottom: 15px;
+}
+
+/** LIVE STREAM section */
+.streamer-name-style {
+    color: whitesmoke;
+    margin: 15px;
+    font-family: 'Roboto';
+    font-weight: bolder;
+    font-size: 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 85%;
+    min-height: 30px;
+}
+
+.streaming-message-style {
+    color: whitesmoke;
+    margin: 15px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-family: 'Roboto';
+    font-weight: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 85%;
+    min-height: 30px;
+    
+}
+@media (max-width: 700px) {
+    .streaming-message-style {
+        width: 65%;
+    }
+}
+
+.thumbnail {
+    border-radius: 5px;
+}
+
+.live-tv-icon-style {
+    margin-top: auto;
+    margin-right: 15px;
+    margin-bottom: 15px;
     margin-left: auto;
-    justify-self: flex-end;
-    color: #F44336;
+    color: whitesmoke; 
+    justify-self: flex-end;                   
+}
+
+.live-stream-card-style {
+    display: flex;
+    flex-direction: column;
+}
+
+.recording-style {
+    max-width: 20px;
+    max-height: 20px;
+    background-color: #D32F2F;         /* primary red darker color */
+}
+
+.live-tv-icon-div-style {
+    margin-top: auto;
+    display: flex;
+    justify-items: flex-end;
+}
+
+.streaming-message-div-style {
+    display: flex;
+    margin-right: auto;
 }

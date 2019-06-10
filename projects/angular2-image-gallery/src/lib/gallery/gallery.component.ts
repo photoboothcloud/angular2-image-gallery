@@ -3,9 +3,8 @@ import {
   Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren
 } from '@angular/core'
 import { ImageService } from '../services/image.service'
-import { Subscription } from 'rxjs/internal/Subscription'
 import { HttpClient } from '@angular/common/http'
-import { Observable, Subject } from 'rxjs'
+import { Observable, Subject, Subscription } from 'rxjs'
 import { PhotoboothCloudMediaExtended, PhotoboothCloudMedia, MaterialPalette, PreviewDetails } from '../gallery-media';
 import { PhotoboothCloudGreetingCard } from '../gallery-greeting-card';
 
@@ -35,6 +34,8 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     @Output() selectedMediaEmmitter: EventEmitter<any> = new EventEmitter<any>()
     @Output() deleteImgElementEmitter: EventEmitter<string> = new EventEmitter<string>()
     commentViewerOpenedPropagateSubject: Subject<boolean> = new Subject<boolean>()
+    greetingCardAuthorWidth: number;
+    greetingCardTextWidth: number;
 
     // end region
 
@@ -66,7 +67,6 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
 
     @HostListener('window:resize', ['$event']) windowResize(event: any): void {
         this.render()
-
         this.photoboothCloudResizeHandler()
     }
 
@@ -79,6 +79,9 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         setTimeout(() => {
             this.fetchDataAndRender()
         }, 0)
+
+       
+
         this.viewerSubscription = this.imageService.showImageViewerChanged$
             .subscribe((visibility: boolean) => this.viewerChange.emit(visibility))
 
@@ -124,11 +127,13 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         
         // GREETING_CARD section
         let authorElements = document.getElementsByClassName("greeting-card-author")
-        console.log("WIDTH: " + document.getElementsByClassName("element-container-style")[0].clientWidth)
-        for(let i = 0; i < authorElements.length; i++) {
-            // this.renderer.setStyle(element[i], 'width', '100px', RendererStyleFlags2.Important);
-        }
+        const width = (document.getElementsByClassName("element-container-style")[0] as HTMLElement).offsetWidth
+        this.greetingCardAuthorWidth = width - 30; // Minus 15 px margin from left and right
+        this.greetingCardTextWidth =  width - 30;  // Minus 15 px margin from left and right
+    
+        // LIVE STREAM section
         
+
     }
 
     openImageViewer(img: any): void {
@@ -164,11 +169,11 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         if (this.providedData) {
             this.providedDataSubscription = this.providedData.subscribe(media => {
                 let extendedData: Array<PhotoboothCloudMediaExtended> = media
-                console.log('Proslijeden data 33', extendedData)
+                console.log('Proslijeden data 49', extendedData)
 
                 extendedData.forEach((element) => {
                     
-                    if (element.type === "GREETING_CARD") {
+                    if (element.type === "GREETING_CARD" || element.type === "LIVE_STREAM") {
                         element['galleryImageLoaded'] = false
                         element['viewerImageLoaded'] = false
                         element['srcAfterFocus'] = ''
@@ -195,6 +200,9 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
                 })
                 this.render()
                 // this.render()
+
+                // Set greeting cards style
+                this.photoboothCloudResizeHandler()
             })
 
         } else {
@@ -265,17 +273,28 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         newExtMedia['srcAfterFocus'] = ''
         
         if (newExtMedia.type === "GREETING_CARD") {
-            newExtMedia.dominant_color = MaterialPalette.AMBER
+            newExtMedia.dominant_color = MaterialPalette.YELLOW
             newExtMedia.preview_xxs = <PreviewDetails>{}
             
-            newExtMedia.preview_xxs.width  = 300
-            newExtMedia.preview_xxs.height = 225
+            newExtMedia.preview_xxs.width  = 210
+            newExtMedia.preview_xxs.height = 210
 
-            newExtMedia['width'] = "300px"
-            newExtMedia['height'] = "225px"
+            newExtMedia['width'] = "210px"
+            newExtMedia['height'] = "210px"
+
+        } else if (newExtMedia.type === "LIVE_STREAM") {
+            newExtMedia.dominant_color = MaterialPalette.LIGHT_BLUE
+            newExtMedia.preview_xxs = <PreviewDetails>{}
+            
+            newExtMedia.preview_xxs.width  = 210
+            newExtMedia.preview_xxs.height = 210
+
+            newExtMedia['width'] = "210px"
+            newExtMedia['height'] = "210px"
         }
         
-        this.images.push(newExtMedia)
+        this.images.splice(0, 0, newExtMedia);       // Add on 0 index of array 
+        // this.images.push(newExtMedia)                Add on end of array
         this.imageService.updateImages(this.images)
 
         this.render() 
@@ -283,15 +302,18 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     public RemoveMedia(id: String) {
-        
+        let mediaFound: boolean = false;
         for(let i = 0; i < this.images.length; i++){ 
             if ( this.images[i].id === id) {
               this.images.splice(i, 1); 
               i--;
+              mediaFound = true;
             }
          }
-         this.imageService.updateImages(this.images)
-         this.render()
+         if (mediaFound) {
+            this.imageService.updateImages(this.images)
+            this.render()
+         }
     }
 
     public CommentViewerChanged(openClose: boolean) {
@@ -403,6 +425,28 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         this.rightArrowInactive = this.rowIndex > (this.gallery.length - this.rowsPerPage)
     }
 
+    public openSelectedMedia(media: any) {
+        if (media && media.type) {
+            switch(media.type) {
+                case "GREETING_CARD": {
+                     this.selectedMediaEmmitter.emit(media); 
+                     break;
+                }
+                case "LIVE_STREAM": {
+                      this.selectedMediaEmmitter.emit(media)
+                      break;
+                }
+                case "PHOTO":    {
+                      // Goes on Open image viewer.
+                      break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+    }
+
     public commentViewerBridge(event) {
         this.commentViewerSecondEmmitter.emit(event)
     }
@@ -410,4 +454,5 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     public deleteMedia(media: any) {
        this.providedDeleteMediaEmitter.emit(media)
     }
+
 }

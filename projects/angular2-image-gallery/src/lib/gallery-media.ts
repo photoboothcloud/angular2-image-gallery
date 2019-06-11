@@ -71,6 +71,10 @@ export class MaterialPalette {
     static AMBER         = "#ffab00";
     static ORANGE        = "#ff6d00";
     static DEEP_ORANGE   = "#dd2c00";
+    
+    /** Not material colors */
+    static BLACK         = "#000000";
+    static DARK_BLUE     = "#191938";
 
 
     static getAllColors(): Array<string> {

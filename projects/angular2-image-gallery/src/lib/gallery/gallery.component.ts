@@ -273,7 +273,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         newExtMedia['srcAfterFocus'] = ''
         
         if (newExtMedia.type === "GREETING_CARD") {
-            newExtMedia.dominant_color = MaterialPalette.YELLOW
+            newExtMedia.dominant_color = MaterialPalette.DARK_BLUE
             newExtMedia.preview_xxs = <PreviewDetails>{}
             
             newExtMedia.preview_xxs.width  = 210

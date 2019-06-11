@@ -220,6 +220,52 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
         this.imageService.showImageViewer(false)
     }
 
+    indexOnEdgeOfGallery(index: number): boolean{
+        if ((index == this.images.length - 1)  || (index == 0)) {
+            return true
+        }
+        return false
+    }
+
+    /**
+     * @author Ivan Stepanic
+     * @param direction - -1 or 1 depends of navigating the gallery
+     * @returns - true if photo(image) is found in some direction. And skip current index until next media is photo(image).
+     *          - false if photo(image) is not found in some direction. (Do not navigate than.)
+     */
+    skipUntilPhotoIsNext(direction: number) {
+        
+        // Only navigate if comments are not shown.
+        if (!this.commentViewerOpened) {
+            if ((direction === 1 && this.currentIdx < this.images.length - 1) ||
+                (direction === -1 && this.currentIdx > 0)) {
+                
+                    let tmpCurrentIdx: number = this.currentIdx
+                    let photoFound: boolean = false
+                    while(true) {
+                        tmpCurrentIdx += direction
+                        
+                        if (this.images[tmpCurrentIdx]['type'] === "PHOTO") {
+                            photoFound = true;
+                            break;
+                        }
+
+                        if (this.indexOnEdgeOfGallery(tmpCurrentIdx)) break;
+                    }
+                    
+                    if (photoFound) {
+                        if (direction === 1) {
+                            this.currentIdx = tmpCurrentIdx - 1
+                        } else {
+                            this.currentIdx = tmpCurrentIdx + 1
+                        }
+                        return true;
+                    }
+                    return false;
+            }
+        }
+    }
+
     onKeydown(event: KeyboardEvent): void {
 
         // Only navigate if comments are not shown.
@@ -234,11 +280,13 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
             switch (prevent) {
                 case 37:
                     // navigate left
-                    this.navigate(-1, false)
+                    if(this.skipUntilPhotoIsNext(-1))
+                        this.navigate(-1, false)
                     break
                 case 39:
                     // navigate right
-                    this.navigate(1, false)
+                    if(this.skipUntilPhotoIsNext(1))
+                        this.navigate(1, false)
                     break
                 case 27:
                     // esc
@@ -263,6 +311,8 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
             }
         }
     }
+
+
 
     private hideNavigationArrows(): void {
         this.leftArrowVisible = false

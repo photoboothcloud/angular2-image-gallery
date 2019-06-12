@@ -29,17 +29,21 @@
          (swiperight)="navigate(-1, $event)"
          (pan)="pan($event)">
 
-        <div *ngFor='let img of images; let j = index'
-             class="image"
-             [class.active]="img['active']"
-             [style.background-image]="img['viewerImageLoaded'] ? 'url('+img[categorySelected]['path']+')' : math.abs(currentIdx-j) <=1 ? 'url('+img['preview_xxs']['path']+')' : ''"
-             [style.left]="transform+'px'"
-             [@imageTransition]="img['transition']"></div>
-
-        <img *ngFor='let img of images; let j = index'
-             class="preloading-image"
-             (load)="imageLoaded(img)"
-             src="{{ math.abs(currentIdx-j) <=1 ? img[categorySelected]['path'] : ''}}"/>
+        <div *ngFor='let img of images; let j = index'>
+          <div *ngIf="img.type == 'PHOTO'"
+               class="image"
+               [class.active]="img['active']"
+               [style.background-image]="img['viewerImageLoaded'] ? 'url('+img[categorySelected]['path']+')' : math.abs(currentIdx-j) <=1 ? 'url('+img['preview_xxs']['path']+')' : ''"
+               [style.left]="transform+'px'"
+               [@imageTransition]="img['transition']"></div>
+        </div>
+        
+        <div *ngFor='let img of images; let j = index'>
+          <img *ngIf="img.type == 'PHOTO'"
+               class="preloading-image"
+               (load)="imageLoaded(img)"
+               src="{{ math.abs(currentIdx-j) <=1 ? img[categorySelected]['path'] : ''}}"/>
+        </div>
     </div>
 </div>
 

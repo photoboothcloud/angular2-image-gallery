@@ -169,7 +169,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         if (this.providedData) {
             this.providedDataSubscription = this.providedData.subscribe(media => {
                 let extendedData: Array<PhotoboothCloudMediaExtended> = media
-                console.log('Proslijeden data 49', extendedData)
+                console.log('Proslijeden data 52', extendedData)
 
                 extendedData.forEach((element) => {
                     

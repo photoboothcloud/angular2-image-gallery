@@ -273,6 +273,9 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
             
             const prevent = [37, 39, 27, 36, 35]
             .find(no => no === event.keyCode)
+            //Photoboothcloud App added.
+            if (!this.showViewer) return;
+
             if (prevent) {
                 event.preventDefault()
             }

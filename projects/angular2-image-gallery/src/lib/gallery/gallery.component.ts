@@ -29,6 +29,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     // PhotoboothCloud App region
     mediaAddedSubscription: Subscription;
     mediaRemoveSubscription: Subscription;
+    mediaUpdateSubscription: Subscription;
     commentViewerSubscription: Subscription;
     @Output() commentViewerSecondEmmitter: EventEmitter<boolean> = new EventEmitter<boolean>()
     @Output() selectedMediaEmmitter: EventEmitter<any> = new EventEmitter<any>()
@@ -50,6 +51,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     @Input('innerGalleryShowed') innerGalleryShowed: boolean
     @Input('mediaAdded') providedMediaAdded: Subject<PhotoboothCloudMedia> = new Subject<PhotoboothCloudMedia>()
     @Input('mediaRemove') providedMediaRemove: Subject<String> = new Subject<String>() 
+    @Input('mediaUpdated') providedMediaUpdate: Subject<PhotoboothCloudMedia | PhotoboothCloudGreetingCard> = new Subject<PhotoboothCloudMedia | PhotoboothCloudGreetingCard>()
     @Input('commentViewerOpened') providedCommentViewerOpened: Subject<boolean> = new Subject<boolean>()
     @Input('showEditState') providedShowEditState: boolean = false;
     @Output('deleteMediaEmitter') providedDeleteMediaEmitter: EventEmitter<any> = new EventEmitter<any>()
@@ -86,11 +88,8 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
             .subscribe((visibility: boolean) => this.viewerChange.emit(visibility))
 
         this.mediaAddedSubscription  = this.providedMediaAdded.subscribe((newMedia: PhotoboothCloudMedia | PhotoboothCloudGreetingCard) => this.AddMedia(newMedia))
-        this.mediaRemoveSubscription = this.providedMediaRemove.subscribe((id: String) => {
-            this.RemoveMedia(id)
-        },
-        (err) => console.log(err))
-
+        this.mediaRemoveSubscription = this.providedMediaRemove.subscribe((id: String) => this.RemoveMedia(id))
+        this.mediaUpdateSubscription = this.providedMediaUpdate.subscribe((newCard: any) => this.UpdateCardURL(newCard))
         this.commentViewerSubscription = this.providedCommentViewerOpened.subscribe((openClose: boolean) => this.CommentViewerChanged(openClose))
 
     }
@@ -120,6 +119,12 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         }
         if (this.commentViewerSubscription) {
             this.commentViewerSubscription.unsubscribe()
+        }
+        if (this.mediaRemoveSubscription) {
+            this.mediaRemoveSubscription.unsubscribe()
+        }
+        if (this.mediaUpdateSubscription) {
+            this.mediaUpdateSubscription.unsubscribe()
         }
     }
 
@@ -169,7 +174,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         if (this.providedData) {
             this.providedDataSubscription = this.providedData.subscribe(media => {
                 let extendedData: Array<PhotoboothCloudMediaExtended> = media
-                console.log('Proslijeden data 52', extendedData)
+                console.log('Proslijeden data 53', extendedData)
 
                 extendedData.forEach((element) => {
                     
@@ -314,6 +319,18 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
             this.imageService.updateImages(this.images)
             this.render()
          }
+    }
+
+    /** Used to update greeting card URL */
+    public UpdateCardURL(newMediaOrCard: PhotoboothCloudMediaExtended) {
+        
+        for (var i = 0; i < this.images.length; i++) {
+            if (this.images[i].id === newMediaOrCard.id) {
+                this.images[i].url = newMediaOrCard.url;
+                console.log("updated card in gall.")
+                break;
+            }
+        }
     }
 
     public CommentViewerChanged(openClose: boolean) {

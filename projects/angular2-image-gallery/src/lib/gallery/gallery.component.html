@@ -24,7 +24,7 @@
                          [style.background]="img.dominant_color"
                          [style.margin-right.px]="calcImageMargin()"
                          (click)="openSelectedMedia(img)"> 
-                        <p class="greeting-card-author" [innerText]="img.author"></p> 
+                        <p class="greeting-card-author" [innerText]="img.author?img.author: 'Anonymous'"></p> 
                         <p class="greeting-card-text" [innerText]="img.text"></p>
 
                         <i class="material-icons heart-icon-style">favorite</i>

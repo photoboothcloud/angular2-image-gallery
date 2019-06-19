@@ -6,6 +6,7 @@ export interface PhotoboothCloudMedia {
     eventRoute:  string
     createdAt:   Date
     updatedAt:   Date
+    id?:         string
 }
 
 export interface PhotoboothCloudPhoto extends PhotoboothCloudMedia {
@@ -50,6 +51,9 @@ export class PhotoboothCloudMediaExtended implements PhotoboothCloudMedia, Photo
     eventCreatorID: string;
     dominant_color: string;
     preview_xxs: PreviewDetails;
+    numberOfViews: number;
+    // card url.
+    url: string;    
 }
 
 

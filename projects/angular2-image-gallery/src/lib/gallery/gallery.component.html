@@ -7,15 +7,25 @@
              [style.margin-bottom.px]="calcImageMargin()">
             <div *ngFor='let img of imgrow; let j = index' class="element-container-style">
                     
-                    <img *ngIf="img.type === 'PHOTO'"
+                    <div *ngIf="img.type === 'PHOTO'"
+                        class="div-img-container-style thumbnail">
+                        <img
                         #imageElement
-                        class="thumbnail"
+                        class="img-element-style thumbnail"
                         [style.width.px]="img['width']"
                         [style.height.px]="img['height']"
+                        [ngClass]="{'disable-media': img.disabled === true }"
+                        (press)="mediaPressed(img)"
                         (click)="openImageViewer(img)"
                         [src]="img['srcAfterFocus']"
-                        [style.background]="img.dominant_color"
+                        [style.background]="img.dominant_color" 
                         [style.margin-right.px]="calcImageMargin()"/>
+
+                        <i *ngIf="img.selected" class="check-icon-style">
+                            <img class="check-icon-img-style" src="../../assets/images/check_icon.png">
+                        </i>
+                    </div>
+                    
 
                     <div *ngIf="img.type === 'GREETING_CARD'"
                          class="greeting-card-style thumbnail"
@@ -23,11 +33,16 @@
                          [style.height.px]="img.height"
                          [style.background]="img.dominant_color"
                          [style.margin-right.px]="calcImageMargin()"
-                         (click)="openSelectedMedia(img)"> 
+                         [ngClass]="{'disable-media': img.disabled === true }"
+                         (press)="mediaPressed(img)"
+                         (click)="openSelectedMedia(img)">
                         <p class="greeting-card-author" [innerText]="img.author?img.author: 'Anonymous'"></p> 
                         <p class="greeting-card-text" [innerText]="img.text"></p>
 
-                        <i class="material-icons heart-icon-style">favorite</i>
+                        <i *ngIf="!img.selected" class="material-icons heart-icon-style">favorite</i>
+                        <i *ngIf="img.selected" class="check-icon-style">
+                            <img class="check-icon-img-style" src="../../assets/images/check_icon.png">
+                        </i>
                     </div>
 
                     <div *ngIf="img.type === 'LIVE_STREAM'"

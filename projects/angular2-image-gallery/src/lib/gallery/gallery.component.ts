@@ -30,6 +30,9 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     mediaAddedSubscription: Subscription;
     mediaRemoveSubscription: Subscription;
     mediaUpdateSubscription: Subscription;
+    mediaDisabledSubscription: Subscription;
+    lastCheckedUncheckedMedia: PhotoboothCloudMediaExtended;
+
     commentViewerSubscription: Subscription;
     @Output() commentViewerSecondEmmitter: EventEmitter<boolean> = new EventEmitter<boolean>()
     @Output() selectedMediaEmmitter: EventEmitter<any> = new EventEmitter<any>()
@@ -54,7 +57,13 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     @Input('mediaUpdated') providedMediaUpdate: Subject<PhotoboothCloudMedia | PhotoboothCloudGreetingCard> = new Subject<PhotoboothCloudMedia | PhotoboothCloudGreetingCard>()
     @Input('commentViewerOpened') providedCommentViewerOpened: Subject<boolean> = new Subject<boolean>()
     @Input('showEditState') providedShowEditState: boolean = false;
+    @Input('mediaDisabled') providedMediaDisabled: Subject<PhotoboothCloudMediaExtended> = new Subject<PhotoboothCloudMediaExtended>()
+
+
+
     @Output('deleteMediaEmitter') providedDeleteMediaEmitter: EventEmitter<any> = new EventEmitter<any>()
+    @Output('mediaChecked') providedMediaCheckedEmitter: EventEmitter<any> = new EventEmitter<any>()
+    @Output('mediaUnChecked') providedMediaUncheckedEmitter: EventEmitter<any> = new EventEmitter<any>()
 
     // end region
 
@@ -91,7 +100,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         this.mediaRemoveSubscription = this.providedMediaRemove.subscribe((id: String) => this.RemoveMedia(id))
         this.mediaUpdateSubscription = this.providedMediaUpdate.subscribe((newCard: any) => this.UpdateCardURL(newCard))
         this.commentViewerSubscription = this.providedCommentViewerOpened.subscribe((openClose: boolean) => this.CommentViewerChanged(openClose))
-
+        this.mediaDisabledSubscription = this.providedMediaDisabled.subscribe((media: PhotoboothCloudMediaExtended) => this.disableMedia(media))
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -142,12 +151,56 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     openImageViewer(img: any): void {
-        this.imageService.updateImages(this.images)
-        this.imageService.updateSelectedImageIndex(this.images.indexOf(img))
-        setTimeout(() => {
-            this.selectedMediaEmmitter.emit(img)
-        }, 0)
-        this.imageService.showImageViewer(true)
+        // Long press is used for check/uncheck img.
+        if (!img['longPressHappened']) {
+            console.log("MEDIA selected", img)
+            this.imageService.updateImages(this.images)
+            this.imageService.updateSelectedImageIndex(this.images.indexOf(img))
+            setTimeout(() => {
+                this.selectedMediaEmmitter.emit(img)
+            }, 0)
+            this.imageService.showImageViewer(true)
+        }
+
+        // Down flag
+        img['longPressHappened'] = false
+    }
+
+    private lastChecked(mediaExt) {
+        if (mediaExt.id === this.lastCheckedUncheckedMedia.id) return true
+
+        return false
+    }
+
+    private selectMedia(media: PhotoboothCloudMediaExtended): void {
+        if (media.type !== "LIVE_STREAM") {
+            for (let i = 0; i < this.images.length; i++) {
+                if (media.id === this.images[i].id) {
+                    this.images[i]['selected'] = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    private unSelectMedia(media: PhotoboothCloudMediaExtended): void {
+        if (media.type !== "LIVE_STREAM") {
+            for (let i = 0; i < this.images.length; i++) {
+                if (media.id === this.images[i].id) {
+                    this.images[i]['selected'] = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    private disableMedia(media: PhotoboothCloudMediaExtended): void {
+        for (let i = 0; i < this.images.length; i++) {
+            if (media.id === this.images[i].id) {
+                this.images[i]['disabled'] = true;
+                break;
+            }
+        }
     }
 
     /**
@@ -443,7 +496,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     public openSelectedMedia(media: any) {
-        if (media && media.type) {
+        if (media && media.type && !media.longPressHappened) {
             switch(media.type) {
                 case "GREETING_CARD": {
                      this.selectedMediaEmmitter.emit(media); 
@@ -462,7 +515,29 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
                 }
             }
         }
+
+        // Down flag
+        if (media.longPressHappened) media.longPressHappened = false
     }
+
+    /* Gesture recognizers */
+    mediaPressed(event) {
+        console.log("MEDIA pressed", event)
+        event['longPressHappened'] = true;
+        if (event['selected']) {
+            event['selected'] = false
+            this.lastCheckedUncheckedMedia = event;
+            this.providedMediaUncheckedEmitter.emit(event)
+        } else {
+            event['selected'] = true
+            this.lastCheckedUncheckedMedia = event;
+            this.providedMediaCheckedEmitter.emit(event)
+        }
+    }
+
+
+
+
 
     public commentViewerBridge(event) {
         this.commentViewerSecondEmmitter.emit(event)

@@ -32,6 +32,7 @@ export interface IGalleryMedia {
     galleryImageLoaded: boolean
     viewerImageLoaded: boolean
     srcAfterFocus: string
+    selected: boolean
 }
 
 export class PhotoboothCloudMediaExtended implements PhotoboothCloudMedia, PhotoboothCloudGreetingCard, IGalleryMedia {
@@ -43,7 +44,10 @@ export class PhotoboothCloudMediaExtended implements PhotoboothCloudMedia, Photo
     galleryImageLoaded: boolean
     viewerImageLoaded: boolean
     srcAfterFocus: string
-
+    selected: boolean
+    disabled: boolean
+    longPressHappened: boolean
+    
     /** Photoboothcloud Card fields (it act like media in gallery, but it is not real media.) */
     id?: string;
     author?: string;

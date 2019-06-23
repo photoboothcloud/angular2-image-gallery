@@ -195,6 +195,33 @@
     min-height: 25px;
 }
 
+/* DISABLE section */
+.disable-media {
+    filter: brightness(20%);
+}
+
+/* IMAGE CARD section */
+.div-img-container-style {
+    position: sticky;
+}
+
+.img-element-style {
+    position: relative;
+    left: 0px;
+    top: 0px;
+}
+.check-icon-style {
+    color: #008000;                     
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    height: 24px;
+    width: 24px;
+}
+
+.check-icon-img-style {
+    width: 24px;
+}
 
 .heart-icon-style {
     color: #F44336;                      /* primary red color */

@@ -129,13 +129,14 @@ md-button-toggle.checked {
 
 
 /* fallback */
-@font-face {
+/* Material Icons should not be defined in the component because this will override global app's Material icons import */
+/* @font-face {
     font-family: 'Material Icons';
     font-style: normal;
     font-weight: 400;
-    src: local('Material Icons'), local('MaterialIcons-Regular'), url(https://fonts.gstatic.com/s/materialicons/v19/2fcrYFNaTjcS6g4U3t-Y5ZjZjT5FdEJ140U2DJYC3mY.woff2) format('woff2');
+    src: url(https://fonts.gstatic.com/s/materialicons/v47/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format('woff2');
 }
-
+  
 .material-icons {
     font-family: 'Material Icons';
     font-weight: normal;
@@ -150,4 +151,4 @@ md-button-toggle.checked {
     direction: ltr;
     -webkit-font-feature-settings: 'liga';
     -webkit-font-smoothing: antialiased;
-}
+} */

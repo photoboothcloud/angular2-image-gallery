@@ -41,6 +41,25 @@
     opacity: 1.0;
 }
 
+.innerContainer {
+    display: flex;
+    height: 100vh;
+}
+
+.video-portrait-style {
+    align-self: center;
+    margin: auto;
+    max-height: 90vh;
+    width: auto;
+}
+
+.video-landscape-style {
+    align-self: center;
+    margin: auto;
+    max-width: 90vw;
+    height: auto;
+}
+
 .arrow {
     opacity: 0.0;
 }

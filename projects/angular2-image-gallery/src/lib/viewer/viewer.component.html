@@ -21,8 +21,6 @@
 
     </div>
 
-    
-
     <div class="imageContainer"
          (click)="showNavigationArrows()"
          (swipeleft)="navigate(1, $event)"
@@ -38,11 +36,19 @@
                [@imageTransition]="img['transition']"></div>
         </div>
         
-        <div *ngFor='let img of images; let j = index'>
+        <div *ngFor='let img of images; let j = index' class="innerContainer">
           <img *ngIf="img.type == 'PHOTO'"
                class="preloading-image"
                (load)="imageLoaded(img)"
                src="{{ math.abs(currentIdx-j) <=1 ? img[categorySelected]['path'] : ''}}"/>
+          
+          <video *ngIf="img.type == 'VIDEO' && img.active == true"
+                 [src]="img['originalDownloadPath']"
+                 [class.active]="img['active']"
+                 [ngClass]="{'video-portrait-style': videoIsPortrait == true, 'video-landscape-style': videoIsPortrait == false}"
+                 autoplay
+                 controls></video>
+
         </div>
     </div>
 </div>

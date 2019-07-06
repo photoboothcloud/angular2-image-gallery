@@ -16,8 +16,8 @@
                         [style.height.px]="img['height']"
                         [ngClass]="{'disable-media': img.disabled === true }"
                         (press)="mediaPressed(img)"
-                        (click)="openImageViewer(img)"
-                        [src]="img['srcAfterFocus']"
+                        (click)="openMediaViewer(img)"
+                        [src]="img['srcAfterFocus']" 
                         [style.background]="img.dominant_color" 
                         [style.margin-right.px]="calcImageMargin()"/>
 
@@ -26,7 +26,6 @@
                         </i>
                     </div>
                     
-
                     <div *ngIf="img.type === 'GREETING_CARD'"
                          class="greeting-card-style thumbnail"
                          [style.width.px]="img.width"
@@ -63,6 +62,32 @@
                             <i class="material-icons live-tv-icon-style">live_tv</i>
                         </div>
                     </div>
+
+                    <div *ngIf="img.type === 'VIDEO' && !!img.width"
+                         class="div-video-card-style thumbnail"
+                         [style.width.px]="img.width"
+                         [style.height.px]="img.height"
+                         [style.background]="img.dominant_color"
+                         [ngClass]="{'disable-media': img.disabled === true }"
+                         [style.margin-right.px]="calcImageMargin()"
+                         (tap)="videoPreviewPause(img)">
+                         <video id="{{ img.id }}"
+                                autoplay
+                                [muted]="true"
+                                class="video-card-style thumbnail"
+                                (ended)="endedPreviewVideo(img)"
+                                [style.width.px]="img.width? img.width: 0"
+                                [style.height.px]="img.height? img.height: 0"
+                                [src]=img.previewDownloadPath>
+                         </video>
+                         <div *ngIf="img.videoIconsVisible" class="div-play-icon-style" (tap)="videoPreviewPlay(img)">
+                            <i class="material-icons play-icon-style">play_circle_filled</i>
+                         </div>
+                         <div *ngIf="img.videoIconsVisible" class="div-full-screen-icon-style" (tap)="openMediaViewer(img)">
+                            <i class="material-icons full-screen-icon-style">fullscreen</i>
+                         </div>
+                    </div>
+
                     <!-- Photobooth cloud app section delete element.-->
                     <div *ngIf="providedShowEditState"
                          class="buttonContainer deleteButtonContainer">

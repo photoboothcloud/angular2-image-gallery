@@ -1,5 +1,4 @@
 /* Image gallery */
-
 .innerGalleryContainer {
     position: relative;
 }
@@ -158,7 +157,6 @@
     visibility: hidden;
 }
 
-
 /** GREETING CARD section */
 .greeting-card-style {
     border-style: dotted;
@@ -173,7 +171,7 @@
     margin: 15px;
     font-family: 'Roboto';
     font-weight: bolder;
-    font-size: 20px;
+    font-size: 18px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -188,6 +186,7 @@
     margin-bottom: 0px;
     font-family: 'Roboto';
     font-weight: normal;
+    font-size: 14px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -237,7 +236,7 @@
     margin: 15px;
     font-family: 'Roboto';
     font-weight: bolder;
-    font-size: 20px;
+    font-size: 18px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -252,6 +251,7 @@
     margin-bottom: 0px;
     font-family: 'Roboto';
     font-weight: normal;
+    font-size: 14px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -268,6 +268,54 @@
 .thumbnail {
     border-radius: 5px;
 }
+
+.div-video-card-style {
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+.video-card-style {
+    background-color: black;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+.div-play-icon-style {
+    top: 0;
+    left: 0;
+    border-radius: 2px;
+    width: inherit;
+    height: inherit;
+    position: absolute;
+    display: flex;
+}
+
+.play-icon-style {
+    font-size: 35px;
+    color: whitesmoke;
+    margin: auto;
+    opacity: 1;
+}
+
+.div-full-screen-icon-style {
+    width: 25px;
+    height: 25px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+}
+
+.full-screen-icon-style {
+    font-size: 20px;
+    color: whitesmoke;
+    opacity: 1;
+    margin: auto;
+
+}
+
 
 .live-tv-icon-style {
     margin-top: auto;

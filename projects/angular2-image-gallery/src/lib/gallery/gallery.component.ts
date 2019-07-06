@@ -96,7 +96,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         this.viewerSubscription = this.imageService.showImageViewerChanged$
             .subscribe((visibility: boolean) => this.viewerChange.emit(visibility))
 
-        this.mediaAddedSubscription  = this.providedMediaAdded.subscribe((newMedia: PhotoboothCloudMedia | PhotoboothCloudGreetingCard) => this.AddMedia(newMedia))
+        this.mediaAddedSubscription  = this.providedMediaAdded.subscribe((newMedia: PhotoboothCloudMediaExtended) => this.AddMedia(newMedia))
         this.mediaRemoveSubscription = this.providedMediaRemove.subscribe((id: String) => this.RemoveMedia(id))
         this.mediaUpdateSubscription = this.providedMediaUpdate.subscribe((newCard: any) => this.UpdateCardURL(newCard))
         this.commentViewerSubscription = this.providedCommentViewerOpened.subscribe((openClose: boolean) => this.CommentViewerChanged(openClose))
@@ -150,16 +150,25 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
 
     }
 
-    openImageViewer(img: any): void {
+    openMediaViewer(img: any): void {
         // Long press is used for check/uncheck img.
         if (!img['longPressHappened']) {
             console.log("MEDIA selected", img)
-            this.imageService.updateImages(this.images)
-            this.imageService.updateSelectedImageIndex(this.images.indexOf(img))
-            setTimeout(() => {
+
+            // For now do not show Live stream original video.
+            if (!img['streamID']) {
+                console.log("Usao u if")
+                this.imageService.updateImages(this.images)
+                this.imageService.updateSelectedImageIndex(this.images.indexOf(img))
+                this.imageService.showImageViewer(true)
+                
+                setTimeout(() => {
+                    this.selectedMediaEmmitter.emit(img)
+                }, 0)
+            } else {
+                console.log("Usao u else")
                 this.selectedMediaEmmitter.emit(img)
-            }, 0)
-            this.imageService.showImageViewer(true)
+            }
         }
 
         // Down flag
@@ -227,21 +236,26 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         if (this.providedData) {
             this.providedDataSubscription = this.providedData.subscribe(media => {
                 let extendedData: Array<PhotoboothCloudMediaExtended> = media
-                console.log('Proslijeden data 53', extendedData)
+                console.log('Proslijeden data 55+', extendedData)
 
                 extendedData.forEach((element) => {
                     
-                    if (element.type === "GREETING_CARD" || element.type === "LIVE_STREAM") {
+                    if (element.type === "GREETING_CARD" || element.type === "LIVE_STREAM" || element.type === "VIDEO") {
                         element['galleryImageLoaded'] = false
                         element['viewerImageLoaded'] = false
                         element['srcAfterFocus'] = ''
                         element.preview_xxs = <PreviewDetails>{}
                         
-                        element.preview_xxs.width  = 230
+                        element.preview_xxs.width  = 210
                         element.preview_xxs.height = 210
 
-                        element['width'] = "230px"
+                        element['width'] = "210px"
                         element['height'] = "210px"
+                    }
+
+                    if (element.type === "VIDEO") {
+                        element['previewDownloadPath'] = element.previewDownloadPath
+                        element['streamID'] = element.streamID
                     }
                 })
 
@@ -284,7 +298,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
                           image['srcAfterFocus'] = ''
                         })
                         // twice, single leads to different strange browser behaviour
-                        this.render()
+                        //this.render()
                         this.render()
                     },
                   err => {
@@ -323,25 +337,14 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     }
 
 
-    public AddMedia(newMediaOrCard: PhotoboothCloudMedia | PhotoboothCloudGreetingCard) {
-        const newExtMedia: PhotoboothCloudMediaExtended = newMediaOrCard as PhotoboothCloudMediaExtended
+    public AddMedia(newExtMedia: PhotoboothCloudMediaExtended) {
+        //const newExtMedia: PhotoboothCloudMediaExtended = newMediaOrCard as PhotoboothCloudMediaExtended
 
         newExtMedia['galleryImageLoaded'] = false
         newExtMedia['viewerImageLoaded'] = false
         newExtMedia['srcAfterFocus'] = ''
         
-        if (newExtMedia.type === "GREETING_CARD") {
-            newExtMedia.dominant_color = MaterialPalette.DARK_BLUE
-            newExtMedia.preview_xxs = <PreviewDetails>{}
-            
-            newExtMedia.preview_xxs.width  = 210
-            newExtMedia.preview_xxs.height = 210
-
-            newExtMedia['width'] = "210px"
-            newExtMedia['height'] = "210px"
-
-        } else if (newExtMedia.type === "LIVE_STREAM") {
-            newExtMedia.dominant_color = MaterialPalette.LIGHT_BLUE
+        if (newExtMedia.type !== "PHOTO") {
             newExtMedia.preview_xxs = <PreviewDetails>{}
             
             newExtMedia.preview_xxs.width  = 210
@@ -350,9 +353,23 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
             newExtMedia['width'] = "210px"
             newExtMedia['height'] = "210px"
         }
+
+        if (newExtMedia.type === "GREETING_CARD") {
+            newExtMedia.dominant_color = MaterialPalette.DARK_BLUE
+            
+
+        } else if (newExtMedia.type === "LIVE_STREAM") {
+            newExtMedia.dominant_color = MaterialPalette.LIGHT_BLUE
+        } else if (newExtMedia.type === "VIDEO") {
+            newExtMedia.dominant_color = MaterialPalette.PRIMARY_RED
+        }
         
         this.images.splice(0, 0, newExtMedia);       // Add on 0 index of array 
         // this.images.push(newExtMedia)                Add on end of array
+
+        // set all video elements hiddent icons.
+        this.images = this.imageService.setVideoElementsHiddenIcons(this.images)
+
         this.imageService.updateImages(this.images)
 
         this.render() 
@@ -369,7 +386,10 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
             }
          }
          if (mediaFound) {
+            // set all video elements hiddent icons.
+            this.images = this.imageService.setVideoElementsHiddenIcons(this.images)
             this.imageService.updateImages(this.images)
+            
             this.render()
          }
     }
@@ -536,8 +556,39 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
     }
 
 
+    public endedPreviewVideo(video: any) {
+        video.videoIconsVisible = true;
+    }
 
+    public videoPreviewPause(video: any) {
+        const videoElement = document.getElementById(video.id) as HTMLVideoElement
+        if (videoElement && this.videoIsPlaying(videoElement)) {
+            videoElement.pause();
+            console.log("pause")
+            video.videoIconsVisible = true;
+        }
+    }
 
+    public videoPreviewPlay(video: any) {
+        const videoElement = document.getElementById(video.id) as HTMLVideoElement
+        if (videoElement) {
+            video.videoIconsVisible = false;
+            console.log("play")
+
+            // Actually replay (5 sec video).
+            videoElement.pause();
+            videoElement.currentTime = 0;
+            videoElement.play();         
+        }
+    }
+
+    private videoIsPlaying(video: HTMLVideoElement):boolean {
+        return !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
+    }
+
+    public videoFullScreen(video: any) {
+        console.log("full screen")
+    }
 
     public commentViewerBridge(event) {
         this.commentViewerSecondEmmitter.emit(event)

@@ -103,7 +103,8 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
 
     private qualitySelectorShown: boolean = false
     private qualitySelected: string = 'auto'
-    
+    videoIsPortrait: boolean = false
+
     constructor(private imageService: ImageService) {
         imageService.imagesUpdated$.subscribe(
             images => {
@@ -115,6 +116,25 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
                 this.images.forEach(image => image['active'] = false)
                 this.images[this.currentIdx]['active'] = true
                 this.transform = 0
+
+                const media = this.images[this.currentIdx]
+                if (media.type === 'VIDEO') {
+                    const saveOrgSrc = this.images[this.currentIdx]['originalDownloadPath']
+                    this.images[this.currentIdx]['originalDownloadPath'] = undefined;
+
+                    const tmpVideo = document.createElement('video');
+                    tmpVideo.src = media.previewDownloadPath
+                    
+                    tmpVideo.onloadedmetadata = ((event) => {
+                        if (tmpVideo.videoWidth >= tmpVideo.videoHeight) {
+                            this.videoIsPortrait = false;
+                        } else {
+                            this.videoIsPortrait = true
+                        }
+                        this.images[this.currentIdx]['originalDownloadPath'] = saveOrgSrc
+                    })
+                }
+
                 this.updateQuality()
             })
         imageService.showImageViewerChanged$.subscribe(
@@ -217,6 +237,15 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
     closeViewer(): void {
         this.images.forEach(image => image['transition'] = undefined)
         this.images.forEach(image => image['active'] = false)
+
+        this.images.forEach(media => {
+            media['transition'] = undefined
+            media['active'] = false
+            if (media.type && media.type === "VIDEO") {
+                media.videoIconsVisible = false
+            }
+        })
+
         this.imageService.showImageViewer(false)
     }
 
@@ -336,7 +365,11 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
         }, 500)
     }
 
+    /** Only update quality for photos. */
     private updateQuality(): void {
+        
+        if (this.images[this.currentIdx]['type'] !== 'PHOTO') return
+
         const screenWidth = window.innerWidth
         const screenHeight = window.innerHeight
 

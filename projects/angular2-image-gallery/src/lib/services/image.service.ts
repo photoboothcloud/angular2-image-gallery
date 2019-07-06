@@ -15,6 +15,16 @@ export class ImageService {
         this.imagesUpdatedSource.next(images)
     }
 
+    setVideoElementsHiddenIcons(media: Array<any>): Array<any> {
+        for (let i = 0; i < media.length; i++) {
+            if (media[i].type === "VIDEO") {
+                media[i].videoIconsVisible = false;
+            }
+        }
+
+        return media;
+    }
+
     updateSelectedImageIndex(newIndex: number): void {
         this.imageSelectedIndexUpdatedSource.next(newIndex)
     }

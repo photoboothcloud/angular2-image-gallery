@@ -7,6 +7,7 @@ export interface PhotoboothCloudMedia {
     createdAt:   Date
     updatedAt:   Date
     id?:         string
+
 }
 
 export interface PhotoboothCloudPhoto extends PhotoboothCloudMedia {
@@ -47,7 +48,10 @@ export class PhotoboothCloudMediaExtended implements PhotoboothCloudMedia, Photo
     selected: boolean
     disabled: boolean
     longPressHappened: boolean
-    
+    previewDownloadPath: string;
+    originalDownloadPath: string;
+    streamID: string;
+
     /** Photoboothcloud Card fields (it act like media in gallery, but it is not real media.) */
     id?: string;
     author?: string;
@@ -83,7 +87,7 @@ export class MaterialPalette {
     /** Not material colors */
     static BLACK         = "#000000";
     static DARK_BLUE     = "#191938";
-
+    static PRIMARY_RED   = "#F44336";
 
     static getAllColors(): Array<string> {
         const arr = new Array<string>()

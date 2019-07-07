@@ -70,6 +70,7 @@
                          [style.background]="img.dominant_color"
                          [ngClass]="{'disable-media': img.disabled === true }"
                          [style.margin-right.px]="calcImageMargin()"
+                         (press)="mediaPressed(img)"
                          (tap)="videoPreviewPause(img)">
                          <video id="{{ img.id }}"
                                 autoplay
@@ -86,15 +87,23 @@
                          <div *ngIf="img.videoIconsVisible" class="div-full-screen-icon-style" (tap)="openMediaViewer(img)">
                             <i class="material-icons full-screen-icon-style">fullscreen</i>
                          </div>
+                         
+                         <i *ngIf="img.selected" class="check-icon-style">
+                            <img class="check-icon-img-style" src="../../assets/images/check_icon.png">
+                        </i>
                     </div>
 
                     <!-- Photobooth cloud app section delete element.-->
                     <div *ngIf="providedShowEditState"
                          class="buttonContainer deleteButtonContainer">
-                        <img class="action"
+                         <i class="material-icons delete-media-icon-style"
+                            [attr.disabled]="!providedShowEditState"
+                            (click)="deleteMedia(img)">close</i>
+
+                        <!-- <img class="action"
                              [attr.disabled]="!providedShowEditState" 
-                             src="data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9IjMwcHgiIGlkPSJMYXllcl8xIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1MTIgNTEyOyIgdmVyc2lvbj0iMS4xIiBmaWxsPSIjYWFhIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgd2lkdGg9IjI0cHgiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPiAgPHBhdGggICAgc3Ryb2tlLXdpZHRoPSIzMCIgc3Ryb2tlPSIjNDQ0IiAgICBkPSJNNDM3LjUsMzg2LjZMMzA2LjksMjU2bDEzMC42LTEzMC42YzE0LjEtMTQuMSwxNC4xLTM2LjgsMC01MC45Yy0xNC4xLTE0LjEtMzYuOC0xNC4xLTUwLjksMEwyNTYsMjA1LjFMMTI1LjQsNzQuNSAgYy0xNC4xLTE0LjEtMzYuOC0xNC4xLTUwLjksMGMtMTQuMSwxNC4xLTE0LjEsMzYuOCwwLDUwLjlMMjA1LjEsMjU2TDc0LjUsMzg2LjZjLTE0LjEsMTQuMS0xNC4xLDM2LjgsMCw1MC45ICBjMTQuMSwxNC4xLDM2LjgsMTQuMSw1MC45LDBMMjU2LDMwNi45bDEzMC42LDEzMC42YzE0LjEsMTQuMSwzNi44LDE0LjEsNTAuOSwwQzQ1MS41LDQyMy40LDQ1MS41LDQwMC42LDQzNy41LDM4Ni42eiIvPjwvc3ZnPg=="
-                             (click)="deleteMedia(img)" />   
+                             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAAB9CAYAAABUO8YHAAAACXBIWXMAAC4jAAAuIwF4pT92AAAGWWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDAgNzkuMTYwNDUxLCAyMDE3LzA1LzA2LTAxOjA4OjIxICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgKE1hY2ludG9zaCkiIHhtcDpDcmVhdGVEYXRlPSIyMDE5LTA3LTA3VDE0OjExOjAxKzAyOjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAxOS0wNy0wN1QxNDoxNjoyMSswMjowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAxOS0wNy0wN1QxNDoxNjoyMSswMjowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDphODVlYmQ0Ni03ZjEwLTQ3YjktODc1Yi04ODc5NjI0MWM2YWIiIHhtcE1NOkRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOnBob3Rvc2hvcDo0ZmJlODQ1My1hZTUzLTI0NDYtOWY0YS1kNmI1YjY1YjI3NDciIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDozODBiOWFiYi1iNTdhLTQyYjUtYTc2ZC1lMmJlNmI0MzAyZDYiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjM4MGI5YWJiLWI1N2EtNDJiNS1hNzZkLWUyYmU2YjQzMDJkNiIgc3RFdnQ6d2hlbj0iMjAxOS0wNy0wN1QxNDoxMTowMSswMjowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIChNYWNpbnRvc2gpIi8+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjb252ZXJ0ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImZyb20gYXBwbGljYXRpb24vdm5kLmFkb2JlLnBob3Rvc2hvcCB0byBpbWFnZS9wbmciLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOmE4NWViZDQ2LTdmMTAtNDdiOS04NzViLTg4Nzk2MjQxYzZhYiIgc3RFdnQ6d2hlbj0iMjAxOS0wNy0wN1QxNDoxNjoyMSswMjowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIChNYWNpbnRvc2gpIiBzdEV2dDpjaGFuZ2VkPSIvIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PuEhJnEAAAIZSURBVHja7d0xbuQwDAVQ3f+yU03NBVIECIJdLBLb+iJf8XtLL87YlkSuqlqSE5MARIAAESBABAgQAQLEJAARIEAECBABAkSAABEgAqQPyPv9/lvqP7Ka5cdjvhOkfpAJEP8c810g9YtMwvg25jtA6oJMwvgy5lSQGoZxG0hdnCkYn+NNB6lBGJeD1I2ZgPGRU0BqAsZpINUd40SQ6oxxKkh1xTgZpDpiXA3SEeXx8ZwOUo0wKv3TyU6UbWPoAlKHY9wKcjLK9utOW6DaiRJxvXcv4Z6CEnOdKWvqO1Giru8JkGSUuOt6CiRx8JF/JE+CJE1C7L/Rp0ESJiP6N20HyM5JiX/q2wWyYOSBLBh5IAtGHsiCkQeyYOSBrOkYiSBrMkYqyJqKkQxyOcrr9fpI+vJxMsiadGecArImYZwCsqZgnASyJmCcBrK6Y5wIsjpjuEPcIX5DPGV5yvIe4k3dm7pvWdO+Zfnaaz3EeogVQ2vq1tTtOrEvy74sOxeb7Fy0t9fud7vfnQ8JPx/iBFUQiDOGQWcMncINOoXrnHrQOXWVHIIqOah10qQYv2pA6mX1rpelolzjYvxqLqpK2qcqqbq9KlurbK32OxDdEfQP0T9Eh507QPSgGvAeokubPoa9+hjq9NmwGL9euLpF9+8WrZ/67jV1eS4mAYgAASJAgAgQIAIEiEkAIkCACBAgAgSIAAEiQATIEfkD0EwS6V8CvRoAAAAASUVORK5CYII="
+                             (click)="deleteMedia(img)" />    -->
                     </div>
             </div> 
         </div>

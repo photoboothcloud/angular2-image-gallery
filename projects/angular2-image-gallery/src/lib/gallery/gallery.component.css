@@ -143,6 +143,7 @@
     left: unset;
     display: inline-block;
     position: absolute;
+    margin-right: 2px;
 }
 
 .element-container-style {
@@ -300,22 +301,35 @@
 }
 
 .div-full-screen-icon-style {
-    width: 25px;
-    height: 25px;
+    width: 35px;
+    height: 35px;
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     display: flex;
 }
 
 .full-screen-icon-style {
-    font-size: 20px;
+    font-size: 30px;
     color: whitesmoke;
     opacity: 1;
     margin: auto;
 
 }
 
+.full-screen-icon-style:hover {
+    background-color: #222;
+}
+
+.delete-media-icon-style{
+    font-size: 30px;
+    color: whitesmoke;
+    opacity: 1;
+}
+
+.delete-media-icon-style:hover {
+    background-color: #222;
+}
 
 .live-tv-icon-style {
     margin-top: auto;

@@ -156,19 +156,25 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
             console.log("MEDIA selected", img)
 
             // For now do not show Live stream original video.
-            if (!img['streamID']) {
-                console.log("Usao u if")
-                this.imageService.updateImages(this.images)
+            // if (!img['streamID']) {
+            //     this.imageService.updateImages(this.images)
+            //     this.imageService.updateSelectedImageIndex(this.images.indexOf(img))
+            //     this.imageService.showImageViewer(true)
+                
+            //     setTimeout(() => {
+            //         this.selectedMediaEmmitter.emit(img)
+            //     }, 0)
+            // } else {
+            //     this.selectedMediaEmmitter.emit(img)
+            // }
+            
+            this.imageService.updateImages(this.images)
                 this.imageService.updateSelectedImageIndex(this.images.indexOf(img))
                 this.imageService.showImageViewer(true)
                 
                 setTimeout(() => {
                     this.selectedMediaEmmitter.emit(img)
                 }, 0)
-            } else {
-                console.log("Usao u else")
-                this.selectedMediaEmmitter.emit(img)
-            }
         }
 
         // Down flag
@@ -361,7 +367,7 @@ export class GalleryComponent implements OnInit, OnDestroy, OnChanges {
         } else if (newExtMedia.type === "LIVE_STREAM") {
             newExtMedia.dominant_color = MaterialPalette.LIGHT_BLUE
         } else if (newExtMedia.type === "VIDEO") {
-            newExtMedia.dominant_color = MaterialPalette.PRIMARY_RED
+            // newExtMedia.dominant_color = MaterialPalette.PRIMARY_RED
         }
         
         this.images.splice(0, 0, newExtMedia);       // Add on 0 index of array 

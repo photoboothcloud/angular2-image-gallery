@@ -41,7 +41,7 @@
     opacity: 1.0;
 }
 
-.innerContainer {
+.inner-container {
     display: flex;
     height: 100vh;
 }
@@ -145,6 +145,15 @@ md-button-toggle.checked {
     transition: all ease-out 0.5s;
 }
 
+.close-media-icon-style {
+    font-size: 30px;
+    color: whitesmoke;
+    opacity: 1;
+}
+
+.close-media-icon-style:hover {
+    background-color: #222;
+}
 
 
 /* fallback */

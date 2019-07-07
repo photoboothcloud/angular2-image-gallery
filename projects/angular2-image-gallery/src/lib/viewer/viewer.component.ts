@@ -119,7 +119,7 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
 
                 const media = this.images[this.currentIdx]
                 if (media.type === 'VIDEO') {
-                    const saveOrgSrc = this.images[this.currentIdx]['originalDownloadPath']
+                    const saveOrgSrc = new String(this.images[this.currentIdx]['originalDownloadPath'])
                     this.images[this.currentIdx]['originalDownloadPath'] = undefined;
 
                     const tmpVideo = document.createElement('video');
@@ -274,7 +274,8 @@ export class ViewerComponent implements OnInit, OnDestroy, OnChanges {
                     while(true) {
                         tmpCurrentIdx += direction
                         
-                        if (this.images[tmpCurrentIdx]['type'] === "PHOTO") {
+                        if (this.images[tmpCurrentIdx]['type'] === "PHOTO" || 
+                            this.images[tmpCurrentIdx]['type'] === "VIDEO") {
                             photoFound = true;
                             break;
                         }
